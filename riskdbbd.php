@@ -17,7 +17,7 @@ License: GPL2
  * Add waiting shipment option
  * @return [type] [description]
  */
-function register_awaiting_shipment_order_status()
+function rdbapi_register_awaiting_shipment_order_status()
 {
     register_post_status('wc-awaiting-shipment', array(
         'label' => 'Awaiting Shipment',
@@ -28,13 +28,13 @@ function register_awaiting_shipment_order_status()
         'label_count' => _n_noop('Awaiting shipment (%s)', 'Awaiting shipment (%s)'),
     ));
 }
-add_action('init', 'register_awaiting_shipment_order_status');
+add_action('init', 'rdbapi_register_awaiting_shipment_order_status');
 
 /**
  * Add waiting shipment in status
  * @param [type] $order_statuses [description]
  */
-function add_awaiting_shipment_to_order_statuses($order_statuses)
+function rdbapi_add_awaiting_shipment_to_order_statuses($order_statuses)
 {
     $new_order_statuses = array();
     foreach ($order_statuses as $key => $status) {
@@ -45,13 +45,13 @@ function add_awaiting_shipment_to_order_statuses($order_statuses)
     }
     return $new_order_statuses;
 }
-add_filter('wc_order_statuses', 'add_awaiting_shipment_to_order_statuses');
+add_filter('wc_order_statuses', 'rdbapi_add_awaiting_shipment_to_order_statuses');
 
 /**
  * Add shipped option
  * @return [type] [description]
  */
-function register_shipped_order_status()
+function rdbapi_register_shipped_order_status()
 {
     register_post_status('wc-shipped', array(
         'label' => 'Shipped',
@@ -62,13 +62,13 @@ function register_shipped_order_status()
         'label_count' => _n_noop('Shipped (%s)', 'Shipped (%s)'),
     ));
 }
-add_action('init', 'register_shipped_order_status');
+add_action('init', 'rdbapi_register_shipped_order_status');
 
 /**
  * Add shipped in status
  * @param [type] $order_statuses [description]
  */
-function add_shipped_to_order_statuses($order_statuses)
+function rdbapi_add_shipped_to_order_statuses($order_statuses)
 {
     $new_order_statuses = array();
     foreach ($order_statuses as $key => $status) {
@@ -79,7 +79,7 @@ function add_shipped_to_order_statuses($order_statuses)
     }
     return $new_order_statuses;
 }
-add_filter('wc_order_statuses', 'add_shipped_to_order_statuses');
+add_filter('wc_order_statuses', 'rdbapi_add_shipped_to_order_statuses');
 
 /**
  * Add COD Failed option
@@ -136,7 +136,7 @@ add_action('init', 'rdbapi_register_cod_success_order_status');
  * Add COD Success in status
  * @param [type] $order_statuses [description]
  */
-function add_cod_success_to_order_statuses($order_statuses)
+function rdbapi_add_cod_success_to_order_statuses($order_statuses)
 {
     $new_order_statuses = array();
     foreach ($order_statuses as $key => $status) {
@@ -147,14 +147,14 @@ function add_cod_success_to_order_statuses($order_statuses)
     }
     return $new_order_statuses;
 }
-add_filter('wc_order_statuses', 'add_cod_success_to_order_statuses');
+add_filter('wc_order_statuses', 'rdbapi_add_cod_success_to_order_statuses');
 
 /**
  * Call RiskDB on Cod Failed
  * @param  [type] $order_id [description]
  * @return [type]           [description]
  */
-function cod_failed($order_id)
+function rdbapi_cod_failed($order_id)
 {
     $order = wc_get_order($order_id);
     $shipping = $order->get_address('shipping');
@@ -170,14 +170,14 @@ function cod_failed($order_id)
     @wp_remote_retrieve_body(wp_remote_get("https://riskdbbd.com/api/event?" . http_build_query($param)));
     $order->update_status('cancelled', 'Order cancelled via COD Failed!');
 }
-add_action("woocommerce_order_status_cod-failed", 'cod_failed');
+add_action("woocommerce_order_status_cod-failed", 'rdbapi_cod_failed');
 
 /**
  * Call RiskDB on Cod Success
  * @param  [type] $order_id [description]
  * @return [type]           [description]
  */
-function cod_success($order_id)
+function rdbapi_cod_success($order_id)
 {
     $order = wc_get_order($order_id);
     $shipping = $order->get_address('shipping');
@@ -193,9 +193,9 @@ function cod_success($order_id)
     @wp_remote_retrieve_body(wp_remote_get("https://riskdbbd.com/api/event?" . http_build_query($param)));
     $order->update_status('completed', 'Order completed via COD success!');
 }
-add_action("woocommerce_order_status_cod-success", 'cod_success');
+add_action("woocommerce_order_status_cod-success", 'rdbapi_cod_success');
 
-function riskdb_get_data($order_id)
+function rdbapi_get_data($order_id)
 {
     $order_notes = array();
     $args = array(
@@ -233,7 +233,7 @@ function rdbapi_my_order_edit_notice()
     global $woocommerce, $post;
     if (get_post_type() != 'shop_order') {return;}
     $order = new WC_Order($post->ID);
-    $data = riskdb_get_data($post->ID);
+    $data = rdbapi_get_data($post->ID);
     if (!$data) {
         $shipping = $order->get_address('shipping');
         if (empty($shipping['address_1'])) {
@@ -283,18 +283,18 @@ function rdbapi_my_order_edit_notice()
  * Setting Page
  * @return [type] [description]
  */
-function riskdb_setting()
+function rdbapi_setting()
 {
     add_option('riskdb_api_token', '-');
     register_setting('riskdb_options_group', 'riskdb_api_token', '');
 }
-add_action('admin_init', 'riskdb_setting');
+add_action('admin_init', 'rdbapi_setting');
 
-function riskdb_register_options_page()
+function rdbapi_register_options_page()
 {
     add_options_page('RiskDB Setting', 'RiskDB', 'manage_options', 'riskdb', 'riskdb_options_page');
 }
-add_action('admin_menu', 'riskdb_register_options_page');
+add_action('admin_menu', 'rdbapi_register_options_page');
 
 function riskdb_options_page()
 {
@@ -316,11 +316,11 @@ function riskdb_options_page()
   </div>
 <?php
 }
-function riskdb_settings_link($links)
+function rdbapi_settings_link($links)
 {
     $settings_link = '<a href="options-general.php?page=riskdb">Settings</a>';
     array_unshift($links, $settings_link);
     return $links;
 }
 $plugin = plugin_basename(__FILE__);
-add_filter("plugin_action_links_$plugin", 'riskdb_settings_link');?>
+add_filter("plugin_action_links_$plugin", 'rdbapi_settings_link');?>
