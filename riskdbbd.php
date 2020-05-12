@@ -292,11 +292,11 @@ add_action('admin_init', 'rdbapi_setting');
 
 function rdbapi_register_options_page()
 {
-    add_options_page('RiskDB Setting', 'RiskDB', 'manage_options', 'riskdb', 'riskdb_options_page');
+    add_options_page('RiskDB Setting', 'RiskDB', 'manage_options', 'riskdb', 'rdbapi_options_page');
 }
 add_action('admin_menu', 'rdbapi_register_options_page');
 
-function riskdb_options_page()
+function rdbapi_options_page()
 {
     ?>
   <div>
